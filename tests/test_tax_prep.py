@@ -1,9 +1,11 @@
 import pytest
 from ada_tax_prep.income_tax import (
-    calculate_tax_2020, calculate_deducted_income_2020, calculate_tax_liability_2020,
-    TaxPayer
+    calculate_tax_2020, calculate_deducted_income_2020
 )
 
+from ada_tax_prep.income_tax import (
+    calculate_tax_2020
+)
 
 def test_no_income():
     income = 0
@@ -130,7 +132,7 @@ def few_valid_deductions():
         "charity": 5000,
         "mortgage": 5000,
         "child": 5000
-    }    
+    }   
 
 @pytest.fixture
 def new_valid_deductions():
@@ -140,8 +142,8 @@ def new_valid_deductions():
         "child": 5000,
         "tuition": 5000,
         "healthcare": 5000,
-        "sales tax": 5000
-    }
+        "home office": 5000
+    } 
 
 def test_deducted_income_cannot_fall_below_zero():
     income = 10000
@@ -171,24 +173,10 @@ def test_ignores_invalid_itemized_deductions(some_invalid_deductions):
 
     assert deducted_income == 35000
 
-def test_calculate_adjusted_income_tax_burden(all_valid_deductions):
+def test_applies_new_itemized_deductions(new_valid_deductions):
     income = 50000
 
-    adjusted_income_tax = calculate_tax_liability_2020(income, all_valid_deductions)
-
-    assert adjusted_income_tax == 988 + 1815
-
-def test_taxpayer_receiving_a_return_gets_a_return(all_valid_deductions):
-    taxpayer = TaxPayer(withholdings=3000, income=50000, deductions=all_valid_deductions)
-
-    refund = taxpayer.calculate_return_2020()
-
-    assert refund == 197
-
-def test_taxpayer_owing_tax_has_negative_return(few_valid_deductions):
-    taxpayer = TaxPayer(withholdings=3000, income=50000, deductions=few_valid_deductions)
-
-    refund = taxpayer.calculate_return_2020()
+    deducted_income = calculate_deducted_income_2020(income, new_valid_deductions)
 
     assert refund == -1003
 
